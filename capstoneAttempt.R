@@ -19,6 +19,7 @@ Twitter = stri_stats_general(twitter)
 News <- stri_stats_general(news)
 (df <- data.frame(Blogs, Twitter, News))
 
+
 # data cleaning
 twitter <- str_to_lower(twitter)
 blogs <- str_to_lower(blogs)
@@ -32,6 +33,18 @@ news3 <- transform(news, platform = "news")
 
 #bind data
 complete <- bind_rows(blogs3, news3, twitter3)
+
+# put character text into a corpus 
+# https://stackoverflow.com/questions/19850638/tm-reading-in-data-frame-and-keep-texts-id
+# first split into lists
+require(tm)
+com <- list(ID = "platform", Content = "X_data")
+myReader <- readTabular(mapping = com)
+mycorpus <- Corpus(DataframeSource(complete), readerControl = list(reader = myReader))
+
+for (i in 1:length(mycorpus)) {
+  attr(mycorpus[[i]], "platform") <- complete$platform[i]
+}
 
 # Clean data - remove punctuation etc
 complete$X_data <- str_replace_all(complete$X_data, pattern = "[[:punct:]]", "")
